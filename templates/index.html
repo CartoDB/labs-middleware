@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="https://libs.cartocdn.com/cartodb.js/v3/3.14/themes/css/cartodb.css" />
+        <script src="https://libs.cartocdn.com/cartodb.js/v3/3.14/cartodb.js"></script>
+        <title>Middleware example</title>
+    </head>
+    <body>
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <h2>{{ message }}</h2>
+        {% endfor %}
+    {% endwith %}
+        {% if user %}
+            <h1>Hello {{ user }}! (<a href="logout">Log out</a>)</h1>
+            <p><a id="show_list" href="#">See province list</a></p>
+            <p><a id="show_map" href="#">See province map</a></p>
+        {% else %}
+            <h1>Please log in</h1>
+            <form action="" method="post">
+                <p>Username: <input type="text" name="username" /></p>
+                <p>Password: <input type="password" name="password" /></p>
+                <p><input type="submit" value="Log in" /></p>
+            </form>
+        {% endif %}
+        <div id="province_list" style="display: none;"></div>
+        <div id="province_map" style="display: none;">
+            <select id="ccaa">
+                <option value="1">Andalucía</option>
+                <option value="2">Aragón</option>
+                <option value="3">Baleares</option>
+                <option value="4">Canarias</option>
+                <option value="5">Cantabria</option>
+                <option value="6">Castilla La Mancha</option>
+            </select>
+            <select id="color">
+                <option value="#5CA2D1">Blue</option>
+                <option value="#5CD1A2">Green</option>
+                <option value="#A25CD1">Purple</option>
+            </select>
+            <div id="map" style="height: 500px"></div>
+        </div>
+        <script>
+            $("#show_list").click(function () {
+                $("#province_map").hide();
+                $("#province_list").show();
+
+                $.get("/sql/provinces/").done(function (data) {
+                    var html = '<table><tr><th>Id</th><th>Region Id</th><th>Code</th><th>Name</th></tr>';
+                    for (var i = 0; i < data.rows.length; i++) {
+                        html += "<tr><td>" + data.rows[i].cartodb_id + "</td><td>" + data.rows[i].ccaa+ "</td><td>" + data.rows[i].codigo + "</td><td>" + data.rows[i].nombre + "</td></tr>";
+                    }
+                    html += "</table";
+                    $("#province_list").html(html);
+                });
+            });
+
+            var layer;
+
+            $("#show_map").click(function () {
+                var map_token;
+                var user_name;
+                var map_name;
+
+                $("#province_list").hide();
+                $("#province_map").show();
+
+                $.get("/map/provinces/").done(function (data) {
+                    map_token = data.token;
+                    user_name = data.username;
+                    map_name = data.name;
+
+                    var map = L.map('map', {
+                        zoomControl: false,
+                        center: [43, 0],
+                        zoom: 3
+                    });
+
+                    // add a base layer
+                    L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',{
+                        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+                    }).addTo(map);
+
+                    // add named map
+                    cartodb.createLayer(map, {
+                        user_name: user_name,
+                        type: 'namedmap',
+                        options: {
+                            named_map: {
+                                name: map_name,
+                                auth_token: map_token,
+                                params: {
+                                  "color": "#5CA2D1"
+                                }
+                            }
+                        }
+                    }, {
+                        https: true
+                    })
+                    .addTo(map)
+                    .done(function (_layer) {
+                        layer = _layer;
+                    });
+                });
+            });
+
+            $("#ccaa").change(function () {
+                layer.setParams("ccaa", $(this).val());
+            });
+
+            $("#color").change(function () {
+                layer.setParams("color", $(this).val());
+            });
+        </script>
+    </body>
+</html>

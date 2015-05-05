@@ -1,0 +1,33 @@
+{
+    "version": "0.0.1",
+    "name": "MAP_NAME",
+    "auth": {
+        "method": "token",
+        "valid_tokens": [
+            "AUTH_TOKEN"
+        ]
+    },
+    "placeholders": {
+        "color": {
+            "type": "css_color",
+            "default": "red"
+        },
+        "filter": {
+            "type": "number",
+            "default": 1
+        }
+    },
+    "layergroup": {
+        "version": "1.0.1",
+        "layers": [
+            {
+                "type": "cartodb",
+                "options": {
+                    "cartocss_version": "2.1.1",
+                    "cartocss": "#layer { polygon-fill: <%= color %>; }",
+                    "sql": "select * from YOUR_TABLE WHERE filter = <%= filter %>"
+                }
+            }
+        ]
+    }
+}

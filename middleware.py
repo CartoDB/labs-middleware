@@ -14,8 +14,8 @@ class Config(object):
     def get(self, section, key):
         try:
             return self.config_parser.get(section, key)
-        except ConfigParser.NoSectionError:
-            return os.environ.get("%s_%s" % (section.upper(), key.upper), None)
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            return os.environ.get("%s_%s" % (section.upper(), key.upper()), None)
 
 config = Config("middleware.conf")
 

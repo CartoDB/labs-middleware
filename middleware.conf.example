@@ -7,6 +7,7 @@ server_cert=certs/server.crt
 server_key=certs/server.key
 sql_endpoint=/PATH_TO_ENDPOINT/
 map_endpoint=/PATH_TO_ENDPOINT/
+redis_url=redis://localhost:6379
 
 [auth]
 username=middle
@@ -20,7 +21,8 @@ username=YOUR_USER_NAME
 
 [map]
 name=YOUR_MAP_NAME_SEE_NAMED_MAP_JSON_EXAMPLE
-token=YOUR_AUTH_TOKEN_SEE_NAMED_MAP_JSON_EXAMPLE
+delete_token_delay=SECONDS_BEFORE_DELETING_TOKEN
+sql=YOUR_SQL_QUERY_WITH_FILTER_PLACEHOLDER_HERE
 
 [sql]
 query=SQL_REQUEST

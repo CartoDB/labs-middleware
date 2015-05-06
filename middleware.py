@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 import ConfigParser
+import json
+import random
+import string
 import os
 import requests
 import ssl
+from celery import Celery
 from flask import Flask, request, session, redirect, url_for, render_template, flash, Response, jsonify, send_from_directory
 
 
@@ -20,13 +24,31 @@ class Config(object):
 config = Config("middleware.conf")
 
 
+def make_celery(app):
+    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+    class ContextTask(TaskBase):
+        abstract = True
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+    celery.Task = ContextTask
+    return celery
+
+
 app = Flask(__name__)
 
 if config.get('platform', 'debug'):
     app.debug = True
 
 app.secret_key = config.get('platform', 'secret_key')
+app.config.update(
+    CELERY_BROKER_URL=config.get('platform', 'redis_url'),
+    CELERY_RESULT_BACKEND=config.get('platform', 'redis_url')
+)
 
+celery = make_celery(app)
 
 @app.route('/js/<path:path>')
 def send_js(path):
@@ -72,11 +94,68 @@ def sql_provinces():
     return Response(r.content, mimetype='application/json')
 
 
+named_map = {
+    "version": "0.0.1",
+    "name": config.get('map', 'name'),
+    "auth": {
+        "method": "token",
+        "valid_tokens": []
+    },
+    "placeholders": {
+        "color": {
+            "type": "css_color",
+            "default": "red"
+        },
+        "filter": {
+            "type": "number",
+            "default": 1
+        }
+    },
+    "layergroup": {
+        "version": "1.0.1",
+        "layers": [
+            {
+                "type": "cartodb",
+                "options": {
+                    "cartocss_version": "2.1.1",
+                    "cartocss": "#layer { polygon-fill: <%= color %>; }",
+                    "sql": config.get('map', 'sql')
+                }
+            }
+        ]
+    }
+}
+
+@celery.task()
+def delete_token(token):
+    try:
+        named_map["auth"]["valid_tokens"].remove(token)
+    except ValueError:
+        pass
+
+    requests.put(os.path.join(config.get('cartodb', 'maps_endpoint'), "named", config.get('map', 'name')),
+                 data=json.dumps(named_map),
+                 params={"api_key": config.get('cartodb', 'api_key')},
+                 headers={'content-type': 'application/json'})
+
+
 @app.route(config.get('platform', 'map_endpoint'))
 def map_provinces():
-    return jsonify({"token": config.get('map', 'token'),
+    map_name = config.get('map', 'name')
+
+    new_token = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20))
+    named_map["auth"]["valid_tokens"].append(new_token)
+
+    requests.put(os.path.join(config.get('cartodb', 'maps_endpoint'), "named", map_name),
+                 data=json.dumps(named_map),
+                 params={"api_key": config.get('cartodb', 'api_key')},
+                 headers={'content-type': 'application/json'})
+
+    delete_token.apply_async((new_token,), countdown=config.get('maps', 'delete_token_delay'))
+
+    return jsonify({"token": new_token,
                     "username": config.get('cartodb', 'username'),
-                    "name": config.get('map', 'name')})
+                    "name": map_name})
 
 
 if __name__ == "__main__":

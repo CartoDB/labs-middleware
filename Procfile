@@ -1,2 +1,2 @@
-web: gunicorn middleware:app --log-file=-
+web: gunicorn middleware:app
 worker: celery worker --app=middleware.celery

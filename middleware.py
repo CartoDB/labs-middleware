@@ -3,7 +3,7 @@ import ConfigParser
 import os
 import requests
 import ssl
-from flask import Flask, request, session, redirect, url_for, render_template, flash, Response, jsonify
+from flask import Flask, request, session, redirect, url_for, render_template, flash, Response, jsonify, send_from_directory
 
 
 class Config(object):
@@ -26,6 +26,16 @@ if config.get('platform', 'debug'):
     app.debug = True
 
 app.secret_key = config.get('platform', 'secret_key')
+
+
+@app.route('/js/<path:path>')
+def send_js(path):
+    return send_from_directory('static/js', path)
+
+
+@app.route('/css/<path:path>')
+def send_css(path):
+    return send_from_directory('static/css', path)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -54,7 +64,7 @@ def sql_provinces():
 
     # Call CartoDB's SQL API
     params = {
-        "q": config.get('map', 'sql'),
+        "q": config.get('sql', 'query'),
         "api_key": config.get('cartodb', 'api_key'),
     }
     r = requests.get(config.get('cartodb', 'sql_endpoint'), params)

@@ -5,6 +5,8 @@ port=8000
 secret_key=RANDOM_KEY_FOR_SESSION_MANAGEMENT
 server_cert=certs/server.crt
 server_key=certs/server.key
+sql_endpoint=/PATH_TO_ENDPOINT/
+map_endpoint=/PATH_TO_ENDPOINT/
 
 [auth]
 username=middle
@@ -19,3 +21,6 @@ username=YOUR_USER_NAME
 [map]
 name=YOUR_MAP_NAME_SEE_NAMED_MAP_JSON_EXAMPLE
 token=YOUR_AUTH_TOKEN_SEE_NAMED_MAP_JSON_EXAMPLE
+
+[sql]
+query=SQL_REQUEST

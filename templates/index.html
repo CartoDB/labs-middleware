@@ -2,8 +2,8 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <link rel="stylesheet" href="css/cartodb.css" />
-        <script src="js/cartodb.js"></script>
+        <link rel="stylesheet" href="https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/3.14/themes/css/cartodb.css" />
+        <script src="https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/3.14/cartodb.js"></script>
         <title>Middleware example</title>
     </head>
     <body>
@@ -14,8 +14,8 @@
     {% endwith %}
         {% if user %}
             <h1>Hello {{ user }}! (<a href="logout">Log out</a>)</h1>
-            <p><a id="show_list" href="#">See province list</a></p>
-            <p><a id="show_map" href="#">See province map</a></p>
+            <p><a id="show_list" href="#">See item list</a></p>
+            <p><a id="show_map" href="#">See item map</a></p>
         {% else %}
             <h1>Please log in</h1>
             <form action="" method="post">
@@ -24,15 +24,10 @@
                 <p><input type="submit" value="Log in" /></p>
             </form>
         {% endif %}
-        <div id="province_list" style="display: none;"></div>
-        <div id="province_map" style="display: none;">
-            <select id="ccaa">
-                <option value="1">Andalucía</option>
-                <option value="2">Aragón</option>
-                <option value="3">Baleares</option>
-                <option value="4">Canarias</option>
-                <option value="5">Cantabria</option>
-                <option value="6">Castilla La Mancha</option>
+        <div id="item_list" style="display: none;"></div>
+        <div id="item_map" style="display: none;">
+            <select id="category">
+                <!-- As many <option value="XXXX">XXXX</option> as necessary -->
             </select>
             <select id="color">
                 <option value="#5CA2D1">Blue</option>
@@ -43,16 +38,16 @@
         </div>
         <script>
             $("#show_list").click(function () {
-                $("#province_map").hide();
-                $("#province_list").show();
+                $("#item_map").hide();
+                $("#item_list").show();
 
-                $.get("/sql/provinces/").done(function (data) {
-                    var html = '<table><tr><th>Id</th><th>Region Id</th><th>Code</th><th>Name</th></tr>';
+                $.get("/sql/items/").done(function (data) {
+                    var html = '<table><tr><th>Id</th><th>Category</th></tr>';
                     for (var i = 0; i < data.rows.length; i++) {
-                        html += "<tr><td>" + data.rows[i].cartodb_id + "</td><td>" + data.rows[i].ccaa+ "</td><td>" + data.rows[i].codigo + "</td><td>" + data.rows[i].nombre + "</td></tr>";
+                        html += "<tr><td>" + data.rows[i].cartodb_id + "</td><td>" + data.rows[i].category+ "</td></tr>";
                     }
-                    html += "</table";
-                    $("#province_list").html(html);
+                    html += "</table>";
+                    $("#item_list").html(html);
                 });
             });
 
@@ -63,10 +58,10 @@
                 var user_name;
                 var map_name;
 
-                $("#province_list").hide();
-                $("#province_map").show();
+                $("#item_list").hide();
+                $("#item_map").show();
 
-                $.get("/map/provinces/").done(function (data) {
+                $.get("/map/items/").done(function (data) {
                     map_token = data.token;
                     user_name = data.username;
                     map_name = data.name;
@@ -105,7 +100,7 @@
                 });
             });
 
-            $("#ccaa").change(function () {
+            $("#category").change(function () {
                 layer.setParams("filter", $(this).val());
             });
 

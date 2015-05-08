@@ -1,11 +1,9 @@
 {
     "version": "0.0.1",
-    "name": "MAP_NAME",
+    "name": "mapname",
     "auth": {
         "method": "token",
-        "valid_tokens": [
-            "AUTH_TOKEN"
-        ]
+        "valid_tokens": []
     },
     "placeholders": {
         "color": {
@@ -25,7 +23,7 @@
                 "options": {
                     "cartocss_version": "2.1.1",
                     "cartocss": "#layer { polygon-fill: <%= color %>; }",
-                    "sql": "select * from YOUR_TABLE WHERE filter = <%= filter %>"
+                    "sql": "select * from items WHERE category = <%= filter %>"
                 }
             }
         ]

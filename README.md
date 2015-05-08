@@ -66,3 +66,6 @@ Just run `foreman start` and then point your browser to http://localhost:5000 (i
 ## Demo
 
 A working demo of this example, with a few minor changes, can be found at http://middleware.cartodb.io/
+
+* User: middle
+* Password: ware

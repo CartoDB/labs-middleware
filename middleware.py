@@ -95,12 +95,6 @@ def sql_items():
     if "username" not in session:
         return redirect(url_for('index'))
 
-    # Call CartoDB's SQL API
-    params = {
-        "q": config.get('sql', 'query'),
-        "api_key": config.get('cartodb', 'api_key'),
-    }
-
     auth_client = APIKeyAuthClient(config.get('cartodb', 'api_key'), config.get('cartodb', 'username'))
     sql_client = SQLCLient(auth_client)
 

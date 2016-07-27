@@ -7,6 +7,7 @@ import os
 import requests
 from celery import Celery
 from flask import Flask, request, session, redirect, url_for, render_template, flash, Response, jsonify
+from carto import *
 
 
 class Config(object):
@@ -99,9 +100,12 @@ def sql_items():
         "q": config.get('sql', 'query'),
         "api_key": config.get('cartodb', 'api_key'),
     }
-    r = requests.get(config.get('cartodb', 'sql_endpoint'), params)
 
-    return Response(r.content, mimetype='application/json')
+    auth_client = APIKeyAuthClient(config.get('cartodb', 'api_key'), config.get('cartodb', 'username'))
+    sql_client = SQLCLient(auth_client)
+
+    r = sql_client.send(config.get('sql', 'query'), do_post=False)
+    return Response(json.dumps(r), mimetype='application/json')
 
 
 # CartoDB's API doesn't support PATCH at the moment of writing this, so we're using this object
@@ -148,10 +152,8 @@ def delete_token(token):
 
     # Call CartoDB's Maps API to remove the token from the named map
     # This will also invalidate the cache for the tiles on the CDN with this token
-    requests.put(os.path.join(config.get('cartodb', 'maps_endpoint'), "named", config.get('map', 'name')),
-                 data=json.dumps(named_map),
-                 params={"api_key": config.get('cartodb', 'api_key')},
-                 headers={'content-type': 'application/json'})
+    auth_client = APIKeyAuthClient(config.get('cartodb', 'api_key'), config.get('cartodb', 'username'))
+    auth_client.send(os.path.join(config.get('cartodb', 'maps_endpoint'), "named", config.get('map', 'name')), http_method="PUT", http_headers={'content-type': 'application/json'}, body=json.dumps(named_map), params={"api_key": config.get('cartodb', 'api_key')})
 
 
 @app.route(config.get('platform', 'map_endpoint'))
@@ -162,10 +164,9 @@ def map_items():
     named_map["auth"]["valid_tokens"].append(new_token)
 
     # Call CartoDB's Maps API to add the token to the named map
-    requests.put(os.path.join(config.get('cartodb', 'maps_endpoint'), "named", map_name),
-                 data=json.dumps(named_map),
-                 params={"api_key": config.get('cartodb', 'api_key')},
-                 headers={'content-type': 'application/json'})
+    auth_client = APIKeyAuthClient(config.get('cartodb', 'api_key'), config.get('cartodb', 'username'))
+    auth_client.send(os.path.join(config.get('cartodb', 'maps_endpoint'), "named", map_name), http_method="PUT", http_headers={'content-type': 'application/json'}, body=json.dumps(named_map), params={"api_key": config.get('cartodb', 'api_key')})
+
 
     # Create Celery task to delete the token after a certain interval
     delete_token.apply_async((new_token,), countdown=config.get('maps', 'delete_token_delay'))

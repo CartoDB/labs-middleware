@@ -7,7 +7,7 @@ import os
 import requests
 from celery import Celery
 from flask import Flask, request, session, redirect, url_for, render_template, flash, Response, jsonify
-from carto import *
+from carto import APIKeyAuthClient, SQLCLient
 
 
 class Config(object):
@@ -160,7 +160,6 @@ def map_items():
     # Call CartoDB's Maps API to add the token to the named map
     auth_client = APIKeyAuthClient(config.get('cartodb', 'api_key'), config.get('cartodb', 'username'))
     auth_client.send(os.path.join(config.get('cartodb', 'maps_endpoint'), "named", map_name), http_method="PUT", http_headers={'content-type': 'application/json'}, body=json.dumps(named_map), params={"api_key": config.get('cartodb', 'api_key')})
-
 
     # Create Celery task to delete the token after a certain interval
     delete_token.apply_async((new_token,), countdown=config.get('maps', 'delete_token_delay'))

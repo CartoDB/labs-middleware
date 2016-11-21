@@ -22,7 +22,7 @@ On CartoDB, the way of visualizing private datasets is by using [named maps](htt
 
 In this case, because we don't want anyone, apart from authorized users, to see the maps, we'll be using [named maps protected by tokens](http://docs.cartodb.com/cartodb-platform/maps-api.html#named-maps-1).
 
-We could follow the same approach as with the SQL API, and make the middleware forward all the requests associated with displaying the map (instantiating the named map and retrieving the tiles), but this would have three important drawbacks:
+We could follow the same approach as with the SQL API, and [make the middleware forward all the requests associated with displaying the map (instantiating the named map and retrieving the tiles)](https://gist.github.com/danicarrion/cf42e373efbae3224deff3d0265c49de), but this would have three important drawbacks:
 
 * We'd miss all the power of CartoDB's caching engine.
 * Our API towards the client app would be more complicated.

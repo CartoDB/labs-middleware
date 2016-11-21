@@ -9,10 +9,10 @@ redis_url=redis://localhost:6379
 username=middle
 password=ware
 
-[cartodb]
+[carto]
 api_key=YOUR_API_KEY
-sql_endpoint=https://YOUR_SUBDOMAIN.cartodb.com/api/v2/sql
-maps_endpoint=https://YOUR_SUBDOMAIN.cartodb.com/api/v1/map
+sql_endpoint=https://YOUR_SUBDOMAIN.carto.com/api/v2/sql
+maps_endpoint=https://YOUR_SUBDOMAIN.carto.com/api/v1/map
 username=YOUR_USER_NAME
 
 [map]

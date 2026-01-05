@@ -1,3 +1,17 @@
+# ⚠️ ARCHIVED - This repository is no longer maintained
+
+**This repository has been archived and is no longer actively maintained.**
+
+This project was last updated on 2022-01-06 and is preserved for historical reference only.
+
+- 🔒 **Read-only**: No new issues, pull requests, or changes will be accepted
+- 📦 **No support**: This code is provided as-is with no support or updates
+- 🔍 **For reference only**: You may fork this repository if you wish to continue development
+
+For current CARTO projects and actively maintained repositories, please visit: https://github.com/CartoDB
+
+---
+
 # Basic auth middleware with CARTO
 
 This is a basic proof of concept of a middleware approach to the problem of how to authenticate and authorize users and allow them access to private datasets and visualization hosted on CARTO.
